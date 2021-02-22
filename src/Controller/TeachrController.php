@@ -4,7 +4,70 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\Common\Persistence\ObjectManager;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Request; 
+use App\Entity\Teachr;
+use App\Entity\Statistics;
 
+class TeachrController extends AbstractController{
+    /** 
+     * @Route("/api/insert_teachr", methods={"POST"})
+
+    */
+    public function createTeacher(Request $request){
+        $em=$this->getDoctrine()->getManager();
+
+        //instanciation d'un nouveau Teachr
+        $teachr=new Teachr();
+        // recuperation de la data du request body
+        $responseBody=json_decode($request->getContent(),true);
+        // attribution du non du teacher
+        $teachr->setName($responseBody["name"]);
+
+        $em->persist($teachr);
+        // recuperation du counter
+
+        
+        $statisticsRepository=$em->getRepository(Statistics::class);
+
+        
+        // voir si il y a des insertions dans le compteur (est ce que des utilisateurs ont déja été ajouté?)
+        $getInsertions=$statisticsRepository->findAll();
+        // si non, je crée un nouveau objet et je lui donne 1 comme valuer
+        if(count($getInsertions)==0){
+            $counter=new Statistics();
+            $counter->setCounter(1);
+            $em->persist($counter);
+        }
+        // si il existe déja une insertion, je recupere la longeur du tableau, je recupere le dernier indice du tableau qui represente un objet de la classe Statistics et je lui incremente sans valeur par un 
+        else{
+            $getStatInsertionLength=count($getInsertions);
+            $getLastId=$getInsertions[$getStatInsertionLength-1]->getId();
+
+            $getLastCounter=$statisticsRepository->findOneBy(["id"=>$getLastId]);
+             
+            $getLastCounter->setCounter($getLastCounter->getCounter()+1);
+            
+            $em->persist($getLastCounter);
+        }
+
+        
+
+        $em->flush();
+
+        return $this->json(["message"=>"merci, le teachr est bien ajouté"]);
+
+        
+    } 
+
+    /**
+     * @Route("/api/teachers/getAll",methods={"GET"})
+     */
+
+     public function getAllTeachersr(){
+         
+     }
+}
 
 
 ?>
