@@ -4,12 +4,25 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\Common\Persistence\ObjectManager;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request; 
+use Symfony\Component\HttpFoundation\JsonResponse; 
 use App\Entity\Teachr;
 use App\Entity\Statistics;
 
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Encoder\XmlEncoder;
+use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
+use Symfony\Component\Serializer\Serializer;
+
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
+
+
+
 class TeachrController extends AbstractController{
+
+   
     /** 
      * @Route("/api/insert_teachr", methods={"POST"})
 
@@ -64,8 +77,26 @@ class TeachrController extends AbstractController{
      * @Route("/api/teachers/getAll",methods={"GET"})
      */
 
-     public function getAllTeachersr(){
-         
+     public function getAllTeachersr(NormalizerInterface $normalizer){
+         $em=$this->getDoctrine()->getManager();
+
+         $teachersRepo=$em->getRepository(Teachr::class);
+
+         $teachers=$teachersRepo->findAll();
+        
+        //transformer le tableau d'objet en tableau associatif
+        $normalizeTeachers=$normalizer->normalize($teachers,null,["grouos"=>"read"]);
+
+        
+        //encode ce tableau en json pour retourner la reponse au client
+         $jsonTeachers=json_encode($normalizeTeachers);
+
+         $response=new Response($jsonTeachers,200,["Content-Type"=>"application/json"]);
+
+         return $response;
+
+        
+
      }
 }
 

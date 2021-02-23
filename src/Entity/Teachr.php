@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\TeachrRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass=TeachrRepository::class)
@@ -14,16 +15,19 @@ class Teachr
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @Groups("read")
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups("read")
      */
     private $name;
 
     /**
      * @ORM\Column(type="datetime")
+     * @Groups("read")
      */
     private $created_at;
 
