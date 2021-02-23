@@ -20,6 +20,8 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 
 
+
+
 class TeachrController extends AbstractController{
 
    
@@ -33,9 +35,9 @@ class TeachrController extends AbstractController{
         //instanciation d'un nouveau Teachr
         $teachr=new Teachr();
         // recuperation de la data du request body
-        $responseBody=json_decode($request->getContent(),true);
+        $requestBody=json_decode($request->getContent(),true);
         // attribution du non du teacher
-        $teachr->setName($responseBody["name"]);
+        $teachr->setName($requestBody["name"]);
 
         $em->persist($teachr);
         // recuperation du counter
@@ -52,7 +54,7 @@ class TeachrController extends AbstractController{
             $counter->setCounter(1);
             $em->persist($counter);
         }
-        // si il existe déja une insertion, je recupere la longeur du tableau, je recupere le dernier indice du tableau qui represente un objet de la classe Statistics et je lui incremente sans valeur par un 
+        // si il existe déja une insertion, je recupere la longeur du tableau, je recupere le dernier indice du tableau qui represente un objet de la classe Statistics et je lui incremente sa valeur par un 
         else{
             $getStatInsertionLength=count($getInsertions);
             $getLastId=$getInsertions[$getStatInsertionLength-1]->getId();
@@ -85,7 +87,7 @@ class TeachrController extends AbstractController{
          $teachers=$teachersRepo->findAll();
         
         //transformer le tableau d'objet en tableau associatif
-        $normalizeTeachers=$normalizer->normalize($teachers,null,["grouos"=>"read"]);
+        $normalizeTeachers=$normalizer->normalize($teachers,null,["groups"=>"read"]);
 
         
         //encode ce tableau en json pour retourner la reponse au client
@@ -97,7 +99,40 @@ class TeachrController extends AbstractController{
 
         
 
+     } 
+     /**
+      * @Route("/api/update_teacher/{id}",methods={"PUT"})
+      */
+
+     public function updateTeacher($id,Request $request, NormalizerInterface $normalizer){
+        $em=$this->getDoctrine()->getManager();
+
+        $teachersRepo=$em->getRepository(Teachr::class);
+
+        $teacher=$teachersRepo->findOneBy(["id"=>$id]);
+
+        $requestBody=json_decode($request->getContent(),true);
+
+        $newName=$requestBody["name"];
+
+        $teacher->setName($newName);
+
+        $em->persist($teacher);
+        $em->flush();
+        $normalizeTeacher=$normalizer->normalize($teacher,null,["groups"=>"read"]);
+
+        $jsonTeacher=json_encode($normalizeTeacher);
+
+        $response=new Response($jsonTeacher,200,["Content-Type"=>"application/json"]);
+
+        return $response;
+
+        
+
+        
      }
+
+
 }
 
 
