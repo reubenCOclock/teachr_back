@@ -108,17 +108,19 @@ class TeachrController extends AbstractController{
         $em=$this->getDoctrine()->getManager();
 
         $teachersRepo=$em->getRepository(Teachr::class);
-
+        // recupere le teacher par rapport au parametre
         $teacher=$teachersRepo->findOneBy(["id"=>$id]);
-
+        //recuperation du corps de l'objet request
         $requestBody=json_decode($request->getContent(),true);
-
+        
         $newName=$requestBody["name"];
-
+        // mis a jour de l'objet teachr
         $teacher->setName($newName);
 
         $em->persist($teacher);
         $em->flush();
+
+        //normalisation de l'objet et retourner la reponse
         $normalizeTeacher=$normalizer->normalize($teacher,null,["groups"=>"read"]);
 
         $jsonTeacher=json_encode($normalizeTeacher);
